@@ -2,5 +2,7 @@
     <string name="app_name">Countdown Timer</string>
     <string name="action_settings">Settings</string>
     <string name="action_cooler">Cooler</string>
-    <string name="button">Toast</string>
+    <string name="button">Send</string>
+    <string name="buttonConnect">Connect</string>
+    <string name="switch1">Switch </string>
 </resources>

@@ -12,19 +12,14 @@ import java.net.Socket;
 public class TcpClient {
 
     public static final String TAG = TcpClient.class.getSimpleName();
-    public static final String SERVER_IP = "192.168.31.167"; //server IP address
-    public static final int SERVER_PORT = 1337;
+    public String SERVER_IP; //server IP address
+    public int SERVER_PORT;
 
     public Boolean connected = false;
-    // message to send to the server
     private String mServerMessage;
-    // sends message received notifications
     private OnMessageReceived mMessageListener = null;
-    // while this is true, the server will continue running
     private boolean mRun = false;
-    // used to send messages
     private PrintWriter mBufferOut;
-    // used to read messages from the server
     private BufferedReader mBufferIn;
 
     public TcpClient(OnMessageReceived listener) {
@@ -36,9 +31,14 @@ public class TcpClient {
             @Override
             public void run() {
                 if (mBufferOut != null) {
-                    Log.d(TAG, "Sending: " + message);
-                    mBufferOut.println(message);
-                    mBufferOut.flush();
+                    try {
+                        Log.d(TAG, "Sending: " + message);
+                        mBufferOut.print(message);
+                        mBufferOut.flush();
+                    } catch (Exception e) {
+                        Log.d(TAG, "Exception Sending: " + e.getMessage());
+
+                    }
                 }
             }
         };
@@ -68,29 +68,34 @@ public class TcpClient {
             InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
             Log.d("TCP Client", "C: Connecting... to " + serverAddr + " " + SERVER_PORT);
 
-            //create a socket to make the connection with the server
-
             Socket socket = new Socket(serverAddr, SERVER_PORT);
-            mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-            mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            while (mRun) {
+            try {
 
-                mServerMessage = mBufferIn.readLine();
-                sendMessage("codsdsdsdlesss");
-                if (mServerMessage != null && mMessageListener != null) {
-                    //call the method messageReceived from MyActivity class
-                    mMessageListener.messageReceived(mServerMessage);
+                mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                sendMessage("Connected to my Phone");
+
+                while (mRun) {
+                    mServerMessage = mBufferIn.readLine();
+                    if (mServerMessage != null && mMessageListener != null) {
+                        //call the method messageReceived from MyActivity class
+                        mMessageListener.messageReceived(mServerMessage);
+                    }
                 }
+                Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + mServerMessage + "'");
+                //socket.close();
 
+            } catch (Exception e) {
+                Log.d("TCP", "S: Error" + e.getMessage());
+            } finally {
+                socket.close();
             }
 
-            Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + mServerMessage + "'");
-            //socket.close();
-            sendMessage("Hi There");
         } catch (Exception e) {
+            Log.e("TCP", "Connectionns: Error", e );
 
-            Log.e("TCP", "Connectionns: Error", e);
         }
 
     }
@@ -119,7 +124,6 @@ public class TcpClient {
                 sendMessage("coolllesss");
                 //in this while the client listens for the messages sent by the server
                 while (mRun) {
-
                     mServerMessage = mBufferIn.readLine();
                     sendMessage("codsdsdsdlesss");
                     if (mServerMessage != null && mMessageListener != null) {

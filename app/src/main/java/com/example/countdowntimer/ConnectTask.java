@@ -6,7 +6,7 @@ import android.util.Log;
 public class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
     TcpClient mTcpClient;
-
+    public boolean started = false;
 
     @Override
     protected TcpClient doInBackground(String... message) {
@@ -16,11 +16,16 @@ public class ConnectTask extends AsyncTask<String, String, TcpClient> {
         mTcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
             @Override
             public void messageReceived(String message) {
-                //this method calls the onProgressUpdate
+                Log.d("ConnectTask", "response from server ----------->" + message);
                 publishProgress(message);
             }
         });
+
+        mTcpClient.SERVER_IP = message[1];
+        mTcpClient.SERVER_PORT = Integer.parseInt(message[2]);
+
         mTcpClient.run1();
+        started = true;
 
         return null;
     }
@@ -30,9 +35,6 @@ public class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
     protected void onProgressUpdate(String... values) {
         super.onProgressUpdate(values);
-        //response received from server
-        Log.d("ConnectTask", "response " + values[0]);
-        //process server response here....
-
+        Log.d("ConnectTask", "response in onProgressUpdate " + values[0]);
     }
 }
