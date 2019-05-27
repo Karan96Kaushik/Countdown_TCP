@@ -94,8 +94,7 @@ public class TcpClient {
             }
 
         } catch (Exception e) {
-            Log.e("TCP", "Connectionns: Error", e );
-
+            Log.d("TCP", "Connectionss: Error" + e.getMessage());
         }
 
     }

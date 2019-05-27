@@ -18,8 +18,7 @@ import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity {
-
-
+    ConnectTask ssocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,14 +33,26 @@ public class MainActivity extends AppCompatActivity {
         final EditText iptext = findViewById(R.id.iptext);
         final EditText porttext = findViewById(R.id.porttext);
 
-        final ConnectTask ssocket = new ConnectTask();
 
         final Button sendbutton = findViewById(R.id.sendbutton);
         sendbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ssocket.mTcpClient.sendMessage(messagetext.getText().toString());
-                Toast.makeText(getApplicationContext(),messagetext.getText().toString(),Toast.LENGTH_SHORT).show();
+                try {
+                    ssocket.mTcpClient.sendMessage(messagetext.getText().toString());
+                    Toast.makeText(getApplicationContext(), messagetext.getText().toString(), Toast.LENGTH_SHORT).show();
+                }  catch (Exception e) {
+                    Log.d("Exception while sending",e.getMessage() + "");
+                    if(ssocket != null) {
+                        ssocket.cancel(true);
+                        if(ssocket.mTcpClient != null) {
+                            ssocket.mTcpClient.stopClient();
+                            Log.d("TCP Client","not null");
+                        }
+                        Log.d("Connect Button","Checking Cancel " + ssocket.isCancelled());
+                    }
+                    displaytext.setText("Connection Error" + "\n" + displaytext.getText().toString());
+                }
             }
         });
 
@@ -50,15 +61,29 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("Notify","trying connect TCP Client");
-                Log.d("Notify",ssocket.started + "");
 
                 try {
+                    if(ssocket != null) {
+                        ssocket.cancel(true);
+                        if(ssocket.mTcpClient != null) {
+                            ssocket.mTcpClient.stopClient();
+                            Log.d("TCP Client","not null");
+
+                        }
+                        Log.d("Connect Button","Checking Cancel " + ssocket.isCancelled());
+                    }
+
+                    ssocket = new ConnectTask();
                     ssocket.execute("", iptext.getText().toString(),porttext.getText().toString());
-                    displaytext.setText("Connecting");
+                    displaytext.setText("Connecting" + "\n" + displaytext.getText().toString());
                 } catch (Exception e) {
                     Log.d("Exception kk ConnectTask",e.getMessage() + "");
-                    ssocket.cancel(true);
-                    displaytext.setText("Connection Destroyed");
+
+                    if(ssocket.mTcpClient != null) {
+                        ssocket.cancel(true);
+                    }
+
+                    displaytext.setText("Connection Destroyed" + "\n" + displaytext.getText().toString());
                 }
             }
         });
@@ -97,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
     public class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
         TcpClient mTcpClient;
+        String ip;
+
         public boolean started = false;
 
         @Override
@@ -112,22 +139,22 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            ip = message[1];
             mTcpClient.SERVER_IP = message[1];
             mTcpClient.SERVER_PORT = Integer.parseInt(message[2]);
 
             started = true;
-            Log.d("Checking cancel", this.isCancelled() + "");
+            Log.d("Checking cancel ", this.isCancelled() + "");
 
             mTcpClient.run1();
 
             Log.d("ConnectTask returns", "Here");
-
             return null;
         }
 
         @Override
         protected void onCancelled() {
-            Log.d("onCancelled reached", "response ");
+            Log.d("onCancelled", "Here " + ip);
 
 
         }
@@ -137,8 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onProgressUpdate(String... values) {
             final TextView displaytext = findViewById(R.id.displaytext);
-
-            displaytext.setText("-> " + values[0]);
+            displaytext.setText("Msg: " + values[0] + "\n" + displaytext.getText().toString());
 
             super.onProgressUpdate(values);
             Log.d("ConnectTask", "response in onProgressUpdate " + values[0]);
