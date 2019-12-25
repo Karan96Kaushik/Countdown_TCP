@@ -31,10 +31,13 @@ public class ConnectTask extends AsyncTask<String, String, TcpClient> {
     }
 
     @Override
-
-
     protected void onProgressUpdate(String... values) {
         super.onProgressUpdate(values);
         Log.d("ConnectTask", "response in onProgressUpdate " + values[0]);
+    }
+
+    @Override
+    protected void onCancelled() {
+        Log.d("ConnectTask", "response in Cancel ");
     }
 }

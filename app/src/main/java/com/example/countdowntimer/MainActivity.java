@@ -28,11 +28,11 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         final TextView displaytext = findViewById(R.id.displaytext);
         final EditText messagetext = findViewById(R.id.messagetext);
         final EditText iptext = findViewById(R.id.iptext);
         final EditText porttext = findViewById(R.id.porttext);
-
 
         final Button sendbutton = findViewById(R.id.sendbutton);
         sendbutton.setOnClickListener(new View.OnClickListener() {
@@ -155,16 +155,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             Log.d("onCancelled", "Here " + ip);
-
-
+            if(mTcpClient != null) {
+                mTcpClient.stopClient();
+            }
         }
 
         @Override
-
-
         protected void onProgressUpdate(String... values) {
             final TextView displaytext = findViewById(R.id.displaytext);
             displaytext.setText("Msg: " + values[0] + "\n" + displaytext.getText().toString());
+
+            if(values[0].equals("ID")){
+                mTcpClient.sendMessage("AB");
+            }
 
             super.onProgressUpdate(values);
             Log.d("ConnectTask", "response in onProgressUpdate " + values[0]);

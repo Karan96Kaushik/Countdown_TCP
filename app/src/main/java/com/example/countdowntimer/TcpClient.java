@@ -14,6 +14,7 @@ public class TcpClient {
     public static final String TAG = TcpClient.class.getSimpleName();
     public String SERVER_IP; //server IP address
     public int SERVER_PORT;
+    public String txt;
 
     public Boolean connected = false;
     private String mServerMessage;
@@ -62,6 +63,8 @@ public class TcpClient {
     }
 
     public void run1() {
+        Log.d("TCP Run", "started run");
+
         try {
             mRun = true;
 
@@ -75,12 +78,16 @@ public class TcpClient {
                 mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                sendMessage("Connected to my Phone");
+                //sendMessage("AB");
 
                 while (mRun) {
+
+                    Log.d("TCP Client", "Msg txt " + txt);
+
                     mServerMessage = mBufferIn.readLine();
                     if (mServerMessage != null && mMessageListener != null) {
                         //call the method messageReceived from MyActivity class
+                        Log.d("TCP Client", "Msg " + mServerMessage);
                         mMessageListener.messageReceived(mServerMessage);
                     }
                 }
